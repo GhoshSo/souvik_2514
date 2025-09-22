@@ -2,9 +2,11 @@ connection: "thelook"
 
 # include all the views
 include: "/views/**/*.view.lkml"
+include: "/views/order_items.view.lkml"
+include: "/models/udd_s1.dashboard.lookml"
 
 datagroup: souvik_2514_default_datagroup {
-  # sql_trigger: SELECT MAX(id) FROM etl_log;;
+  sql_trigger: SELECT MAX(id) FROM etl_log;;
   max_cache_age: "1 hour"
 }
 
@@ -284,6 +286,21 @@ explore: test_space_in_column_name {}
 explore: thor {}
 
 explore: users {}
+
+explore: +users {
+  aggregate_table: rollup__city__country__gender__state {
+    query: {
+      dimensions: [city, country, gender, state]
+      measures: [count]
+      filters: [users.created_year: "2019"]
+      timezone: "America/Los_Angeles"
+    }
+
+    materialization: {
+      datagroup_trigger: souvik_2514_default_datagroup
+    }
+  }
+}
 
 explore: user_data {
   join: users {

@@ -2,6 +2,28 @@ view: users {
   sql_table_name: demo_db.users ;;
   drill_fields: [id]
 
+  parameter: date_granularity {
+    type: unquoted
+    allowed_value: {
+      label: "Break down by Day"
+      value: "day"
+    }
+    allowed_value: {
+      label: "Break down by Month"
+      value: "month"
+    }
+  }
+
+  dimension: date {
+    sql:
+    {% if date_granularity._parameter_value == 'day' %}
+      ${created_date}
+    {% elsif date_granularity._parameter_value == 'month' %}
+      ${created_month}
+    {% else %}
+      ${created_date}
+    {% endif %};;
+  }
   dimension: id {
     primary_key: yes
     type: number
@@ -57,16 +79,65 @@ view: users {
   # ----- Sets of fields for drilling ------
   set: detail {
     fields: [
-	id,
-	first_name,
-	last_name,
-	demo_visits_data.count,
-	events.count,
-	orders.count,
-	saralooker.count,
-	sindhu.count,
-	user_data.count
-	]
+  id,
+  first_name,
+  last_name,
+  demo_visits_data.count,
+  events.count,
+  orders.count,
+  saralooker.count,
+  sindhu.count,
+  user_data.count
+  ]
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  filter: date_filter {
+    label: "The Date Filter"
+    hidden: no
+    type: date
+    datatype: date
+  }
+
+  dimension: new_start_current_period {
+    hidden: yes
+    type: date
+    sql: {% date_start date_filter %} ;;
+  }
+
+  dimension: new_end_current_period {
+    hidden: yes
+    type: date
+    sql: date_sub({% date_end date_filter %}, interval 1 day) ;;
+  }
+
+  dimension: date_diff {
+    type: number
+    sql: DATEDIFF(${new_end_current_period}, ${new_start_current_period}) ;;
+  }
+  measure: sum_date_diff {
+    type: number
+    sql: SUM(${date_diff}) ;;
+  }
+
+
 
 }
