@@ -113,8 +113,8 @@ view: users {
   filter: date_filter {
     label: "The Date Filter"
     hidden: no
-    type: date
-    datatype: date
+    type: date_time
+    datatype: datetime
   }
 
   dimension: new_start_current_period {
